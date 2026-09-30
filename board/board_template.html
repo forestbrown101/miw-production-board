@@ -1,0 +1,283 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<meta http-equiv="refresh" content="300"/>
+<title>MIW Production Board</title>
+<style>
+  *{margin:0;padding:0;box-sizing:border-box;}
+  html,body{height:100%;width:100%;background:#0b0e14;color:#e9edf5;font-family:'Segoe UI',Arial,sans-serif;overflow:hidden;}
+  .wrap{height:100vh;width:100vw;display:flex;flex-direction:column;padding:2.2vh 2.4vw;}
+  .top{display:flex;align-items:center;justify-content:space-between;border-bottom:2px solid #1d2433;padding-bottom:1.2vh;}
+  .brand{font-size:2.9vh;font-weight:700;letter-spacing:.5px;}
+  .brand span{color:#5aa9ff;}
+  .week{font-size:2.1vh;color:#9aa6bd;}
+  .clock{font-size:2.1vh;color:#9aa6bd;font-variant-numeric:tabular-nums;text-align:right;}
+  .upd{font-size:1.4vh;color:#5d6781;}
+  .grid{flex:1;display:grid;grid-template-columns:1.15fr 1fr;grid-template-rows:1fr 1fr;gap:1.4vh 1.6vw;padding-top:1.4vh;}
+  .card{background:#121826;border:1px solid #1d2433;border-radius:14px;padding:1.8vh 1.6vw;display:flex;flex-direction:column;min-height:0;overflow:hidden;}
+  .label{font-size:1.8vh;color:#9aa6bd;text-transform:uppercase;letter-spacing:1px;}
+  .hero{grid-row:1 / span 2;justify-content:space-between;}
+  .bignum{font-size:7.9vh;font-weight:800;line-height:1;color:#fff;}
+  .midnum{font-size:5.5vh;font-weight:800;line-height:1;color:#fff;}
+  .bignum small,.midnum small{font-size:3.0vh;font-weight:600;color:#9aa6bd;}
+  .pacelbl{font-size:1.7vh;color:#9aa6bd;margin-top:.5vh;}
+  .bar{background:#1d2433;border-radius:9px;height:3.4vh;width:100%;overflow:hidden;margin-top:.7vh;}
+  .fill{height:100%;border-radius:9px;display:flex;align-items:center;justify-content:flex-end;padding-right:1.0vw;font-size:2.1vh;font-weight:700;color:#06210f;min-width:3vw;}
+  .proj{font-size:1.7vh;color:#9aa6bd;margin-top:.6vh;}
+  .sub{display:flex;gap:1.0vw;margin-top:1.0vh;}
+  .subcell{flex:1;background:#0e1420;border-radius:10px;padding:.8vh 0;text-align:center;}
+  .subname{font-size:1.5vh;color:#9aa6bd;}
+  .subval{font-size:2.5vh;font-weight:700;color:#cdd6e6;}
+  .plantrow{display:flex;justify-content:space-between;align-items:stretch;gap:1.1vw;margin-top:1.0vh;}
+  .plant{flex:1;text-align:center;background:#0e1420;border:1px solid #1d2433;border-radius:12px;padding:1.1vh .7vw;}
+  .pname{font-size:1.65vh;color:#9aa6bd;margin-bottom:.5vh;}
+  .ptoday{font-size:4.5vh;font-weight:800;line-height:1.02;}
+  .pwtd{font-size:1.45vh;color:#7e8aa3;white-space:nowrap;}
+  .pstats{display:flex;justify-content:center;align-items:baseline;gap:.55vw;}
+  .pconn{font-size:1.6vh;color:#7e8aa3;font-weight:600;}
+  .pmh{font-size:4.0vh;font-weight:800;line-height:1.02;}
+  .mh{display:flex;gap:1.2vw;align-items:stretch;margin-top:auto;}
+  .mhcell{flex:1;text-align:center;background:#0e1420;border-radius:10px;padding:1.4vh 0;}
+  .mhname{font-size:1.7vh;color:#9aa6bd;}
+  .mhval{font-size:5.0vh;font-weight:800;line-height:1;}
+  .good{color:#3ddc84;} .mid{color:#ffc24b;} .bad{color:#ff6b6b;}
+  .chartbox{position:relative;flex:1;width:100%;margin-top:1vh;min-height:0;}
+  .foot{font-size:1.5vh;color:#5d6781;text-align:right;margin-top:.7vh;}
+  .pace{font-size:1.6vh;font-weight:700;padding:.3vh 1vw;border-radius:7px;}
+  .ttrow{display:flex;gap:3vw;align-items:flex-end;margin-top:.5vh;}
+  .bignum2{font-size:5.4vh;font-weight:800;line-height:1;color:#fff;}
+  .ttunit{font-size:1.9vh;color:#9aa6bd;font-weight:600;}
+  .pdiv{height:1px;background:#1d2433;margin:1.3vh 0;}
+  .psplit{display:grid;grid-template-columns:1fr 1fr;gap:1.6vw;}
+  .pcolr{border-left:1px solid #1d2433;padding-left:1.4vw;}
+  .phead{font-size:2.2vh;font-weight:800;letter-spacing:.5px;margin-bottom:.8vh;}
+  .plabel{font-size:1.4vh;color:#9aa6bd;text-transform:uppercase;letter-spacing:1px;}
+  .pval{font-size:3.4vh;font-weight:800;color:#fff;line-height:1.1;margin:.1vh 0 .4vh;}
+  .pval small{font-size:1.6vh;color:#9aa6bd;font-weight:600;}
+  .pval .pace{font-size:1.25vh;padding:.2vh .7vw;border-radius:6px;vertical-align:middle;margin-left:.3vw;}
+  .pbar{background:#1d2433;border-radius:7px;height:2.2vh;overflow:hidden;}
+  .pfill{height:100%;border-radius:7px;display:flex;align-items:center;justify-content:flex-end;padding-right:.6vw;font-size:1.3vh;font-weight:700;color:#06210f;min-width:2.4vw;}
+  .pproj{font-size:1.35vh;color:#9aa6bd;margin-top:.35vh;}
+  .cover{display:flex;align-items:center;gap:.6vw;font-size:1.6vh;color:#9aa6bd;flex-wrap:wrap;}
+  .coverchip{font-size:2.0vh;font-weight:800;color:#cdd6e6;background:#0e1420;padding:.2vh 1vw;border-radius:8px;}
+  .sawtbl{width:100%;border-collapse:collapse;font-variant-numeric:tabular-nums;}
+  .sawtbl th{font-size:1.5vh;color:#7e8aa3;font-weight:600;text-transform:uppercase;letter-spacing:.6px;text-align:right;padding:.8vh .7vw;border-bottom:1px solid #1d2433;}
+  .sawtbl th.sn{text-align:left;}
+  .sawtbl td{font-size:2.15vh;text-align:right;padding:.95vh .7vw;color:#e9edf5;line-height:1.08;}
+  .sawtbl td .pc{font-size:1.3vh;color:#7e8aa3;font-weight:600;}
+  .sawtbl td .tu{font-size:1.2vh;color:#7e8aa3;font-weight:600;margin-left:1px;}
+  .sawtbl tbody tr:nth-child(odd){background:rgba(255,255,255,.022);}
+  .sawtbl td.sn{text-align:left;font-weight:700;white-space:nowrap;padding-left:.8vw;}
+  .sawtbl td.z{color:#3d4560;}
+  .sawtbl .today{background:#132741;}
+  .sawtbl td.tot{font-weight:800;color:#fff;}
+  .sawtbl tfoot td{border-top:2px solid #26314a;color:#9aa6bd;font-weight:700;}
+  .sawtbl tfoot td.tot{color:#fff;}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="top">
+    <div class="brand">MERCHANT IRON WORKS <span id="scopetag">· PRODUCTION</span></div>
+    <div class="week" id="week">—</div>
+    <div><div class="clock" id="clock">--:--</div><div class="upd" id="upd"></div></div>
+  </div>
+  <div class="grid">
+    <div class="card hero">
+      <div>
+        <div class="label">Totals · <span id="fitperiod">period</span> <span id="todaytag" style="color:#5aa9ff"></span></div>
+        <div class="ttrow">
+          <div><span class="bignum2" id="topfit">—</span><span class="ttunit"> Tons fit</span></div>
+          <div><span class="bignum2" id="topcut">—</span><span class="ttunit"> Tons cut</span></div>
+        </div>
+        <div class="pdiv"></div>
+        <div class="psplit">
+          <div class="pcol">
+            <div class="phead" style="color:#5aa9ff">PLANT 1</div>
+            <div class="plabel">Fit tons</div>
+            <div class="pval" id="p1fit">—</div>
+            <div class="pbar"><div class="pfill" id="p1fitbar">—</div></div>
+            <div class="pproj" id="p1fitproj"></div>
+            <div class="plabel" style="margin-top:.9vh">Cut tons</div>
+            <div class="pval" id="p1cut">—</div>
+            <div class="pbar"><div class="pfill" id="p1cutbar">—</div></div>
+            <div class="pproj" id="p1cutproj"></div>
+          </div>
+          <div class="pcol pcolr">
+            <div class="phead" style="color:#F56600">PLANT 4</div>
+            <div class="plabel">Fit tons</div>
+            <div class="pval" id="p4fit">—</div>
+            <div class="pbar"><div class="pfill" id="p4fitbar">—</div></div>
+            <div class="pproj" id="p4fitproj"></div>
+            <div class="plabel" style="margin-top:.9vh">Cut tons</div>
+            <div class="pval" id="p4cut">—</div>
+            <div class="pbar"><div class="pfill" id="p4cutbar">—</div></div>
+            <div class="pproj" id="p4cutproj"></div>
+          </div>
+        </div>
+
+        <div class="label" style="margin-top:1.3vh">Active jobs · QC tons · <span id="jobsperiod"></span></div>
+        <div id="jobs" style="margin:.4vh 0 .2vh;"></div>
+
+        <div class="sub">
+          <div class="subcell"><div class="subname">Man-hours</div><div class="subval" id="hours">—</div></div>
+          <div class="subcell"><div class="subname">Overall MH/ton</div><div class="subval" id="omh">—</div></div>
+        </div>
+      </div>
+      <div class="plantrow" id="plantrow"></div>
+    </div>
+    <div class="card">
+      <div class="label">Saws · Tons &amp; pieces · <span id="sawperiod">this week</span></div>
+      <table class="sawtbl" id="sawtbl" style="margin-top:.6vh;"></table>
+    </div>
+    <div class="card">
+      <div class="label">QC · Tons &amp; pieces · <span id="qcperiod">this week</span></div>
+      <table class="sawtbl" id="qctbl" style="margin-top:.5vh;"></table>
+      <div class="label" style="margin-top:1vh">Paint · Tons &amp; pieces · <span id="paintperiod">this week</span></div>
+      <table class="sawtbl" id="painttbl" style="margin-top:.5vh;"></table>
+    </div>
+  </div>
+  <div class="foot" id="foot"></div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+<script>
+const DATA_FILE = '__DATA_FILE__';
+const FALLBACK = __FALLBACK_JSON__;
+const COLORS = {P1:'#5aa9ff', P2:'#b98cff', P3:'#3ddc84', P4:'#F56600'};
+const SAWC = {S1:'#5aa9ff', S2:'#5aa9ff', S3:'#5aa9ff', S4:'#5aa9ff', S5:'#F56600'};
+let chart = null;
+function mhClass(v){ return v==null?'':(v<=20?'good':v<=30?'mid':'bad'); }
+function num(v,d=1){ return v==null?'—':Number(v).toFixed(d); }
+function barColor(p){ return p>=90?'#3ddc84':p>=60?'#ffc24b':'#ff6b6b'; }
+function setBar(id,pct){ const el=document.getElementById(id); el.style.width=Math.min(pct,100)+'%'; el.textContent=pct+'%'; el.style.background=barColor(pct); }
+function chipHTML(on){ return '<span class="pace" style="background:'+(on?'#103a23':'#3a1414')+';color:'+(on?'#3ddc84':'#ff6b6b')+';">'+(on?'ON PACE':'BEHIND')+'</span>'; }
+function renderPlant(pre, p, elapsed, total){
+  document.getElementById(pre+'fit').innerHTML = num(p.fit_wtd)+'<small> / '+p.fit_goal+' goal</small>'+chipHTML(p.fit_on_pace);
+  setBar(pre+'fitbar', p.fit_pct);
+  document.getElementById(pre+'fitproj').textContent = 'Projected '+Math.round(p.fit_proj)+' t · need '+num(p.fit_expected)+' by now ('+elapsed+'/'+total+' days)';
+  document.getElementById(pre+'cut').innerHTML = num(p.cut_wtd)+'<small> / '+p.cut_goal+' goal</small>';
+  setBar(pre+'cutbar', p.cut_pct);
+  document.getElementById(pre+'cutproj').textContent = 'Projected '+Math.round(p.cut_proj)+' t at current pace';
+}
+
+function render(D){
+  document.getElementById('scopetag').textContent = '· '+(D.scope==='month'?'MONTHLY':'WEEKLY');
+  document.getElementById('week').textContent = D.week_label;
+  document.getElementById('fitperiod').textContent = D.period_label;
+  document.getElementById('todaytag').textContent = '· as of '+D.today_label;
+  const t = D.totals;
+  document.getElementById('topfit').textContent = num(D.top.fit_wtd);
+  document.getElementById('topcut').textContent = num(D.top.cut_wtd);
+  renderPlant('p1', D.p1, t.elapsed_days, t.total_days);
+  renderPlant('p4', D.p4, t.elapsed_days, t.total_days);
+  document.getElementById('hours').textContent = Math.round(t.hours_wtd).toLocaleString();
+  document.getElementById('omh').textContent = num(t.mhton);
+
+  document.getElementById('plantrow').innerHTML = D.plants.filter(p=>p.key!=='P3').map(p=>
+    `<div class="plant"><div class="pname">${p.name}</div>
+      <div class="pstats">
+        <div><div class="ptoday" style="color:${COLORS[p.key]||'#fff'}">${num(p.fit_today)}</div><div class="pwtd">${D.tile_big} · ${num(p.fit_wtd)} ${D.tile_small}</div></div>
+        <div class="pconn">tons at</div>
+        <div><div class="pmh" style="color:${COLORS[p.key]||'#fff'}">${num(p.mhton)}</div><div class="pwtd">MH / Ton</div></div>
+      </div>
+    </div>`).join('');
+
+  document.getElementById('jobsperiod').textContent = (D.scope==='month'?'this month':'this week');
+  const aj = D.active_jobs||[];
+  const jmax = Math.max(1, ...aj.map(j=>j.tons));
+  document.getElementById('jobs').innerHTML = aj.map(j=>{
+    const segs=[['P1',j.p1||0,'#5aa9ff'],['P3',j.p3||0,'#3ddc84'],['P4',j.p4||0,'#F56600']].filter(x=>x[1]>0);
+    const tot=segs.reduce((a,x)=>a+x[1],0)||j.tons||1;
+    const tag=segs.map(x=>`<span style="color:${x[2]}">${x[0]}</span>`).join('<span style="color:#5d6781"> · </span>')||'—';
+    const fills=segs.map(x=>`<div style="width:${(x[1]/tot*100).toFixed(1)}%;background:${x[2]};"></div>`).join('');
+    return `<div style="display:flex;align-items:center;gap:.8vw;padding:.45vh 0;">
+      <div style="font-size:2.2vh;font-weight:700;width:5vw;font-variant-numeric:tabular-nums;">${j.job}</div>
+      <div style="font-size:1.5vh;font-weight:700;width:5.4vw;white-space:nowrap;">${tag}</div>
+      <div style="flex:0 0 12.5vw;min-width:0;font-size:1.8vh;color:#cdd6e6;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${j.name}</div>
+      <div style="flex:1;height:1.7vh;background:#0e1420;border-radius:6px;overflow:hidden;">
+        <div style="height:100%;width:${(j.tons/jmax*100).toFixed(0)}%;display:flex;border-radius:6px;overflow:hidden;">${fills}</div>
+      </div>
+      <div style="font-size:2.2vh;font-weight:800;white-space:nowrap;margin-left:.8vw;font-variant-numeric:tabular-nums;">${num(j.tons)}<span style="font-size:1.3vh;color:#9aa6bd;"> t</span></div>
+    </div>`;}).join('');
+
+  document.getElementById('sawperiod').textContent = (D.scope==='month'?'this month':'this week');
+  const sw = D.saws||[];
+  const days = D.days.map(d=>d.label);
+  const ti = D.today_index;
+  const cell=(tn,pc,cls,u)=> (tn>0||pc>0) ? `<td class="${cls||''}"><div>${num(tn)}${u?'<span class="tu">t</span>':''}</div><div class="pc">${pc} pc</div></td>` : `<td class="z ${cls||''}">—</td>`;
+  let html = '<thead><tr><th class="sn">Saw</th>'+days.map((d,i)=>`<th class="${i===ti?'today':''}">${d}</th>`).join('')+'<th>Total</th></tr></thead><tbody>';
+  sw.forEach(s=>{
+    const pc = COLORS[s.plant]||'#7e8aa3';
+    html += `<tr><td class="sn" style="border-left:3px solid ${pc}"><span style="color:${pc}">${s.name}</span> <span style="font-size:1.3vh;color:${pc};font-weight:700"> ${s.plant}</span></td>`;
+    (s.daily||[]).forEach((v,i)=>{ html += cell(v, (s.daily_pc&&s.daily_pc[i])||0, i===ti?'today':''); });
+    html += cell(s.tons_wtd, s.pieces_wtd, 'tot', true)+'</tr>';
+  });
+  html += '</tbody><tfoot>';
+  const colT = days.map((_,i)=> sw.reduce((a,s)=> a+((s.daily&&s.daily[i])||0), 0));
+  const colP = days.map((_,i)=> sw.reduce((a,s)=> a+((s.daily_pc&&s.daily_pc[i])||0), 0));
+  const gT = sw.reduce((a,s)=> a+(s.tons_wtd||0), 0);
+  const gP = sw.reduce((a,s)=> a+(s.pieces_wtd||0), 0);
+  html += '<tr><td class="sn">Total</td>';
+  colT.forEach((v,i)=>{ html += cell(v, colP[i], (i===ti?'today ':'')+'tt', true); });
+  html += cell(gT, gP, 'tot', true)+'</tr></tfoot>';
+  document.getElementById('sawtbl').innerHTML = html;
+
+  document.getElementById('qcperiod').textContent = (D.scope==='month'?'this month':'this week');
+  const qp = (D.plants||[]).filter(p=>p.key==='P1'||p.key==='P4');
+  const qdays = D.days.map(d=>d.label);
+  const qti = D.today_index;
+  const qcell=(tn,pc,cls,u)=> (tn>0||pc>0) ? `<td class="${cls||''}"><div>${num(tn)}${u?'<span class="tu">t</span>':''}</div><div class="pc">${pc} pc</div></td>` : `<td class="z ${cls||''}">—</td>`;
+  let qh = '<thead><tr><th class="sn">Plant</th>'+qdays.map((d,i)=>`<th class="${i===qti?'today':''}">${d}</th>`).join('')+'<th>Total</th></tr></thead><tbody>';
+  qp.forEach(p=>{
+    const c = COLORS[p.key]||'#7e8aa3';
+    qh += `<tr><td class="sn" style="border-left:3px solid ${c}"><span style="color:${c}">${p.name}</span></td>`;
+    (p.daily_fit||[]).forEach((v,i)=>{ qh += qcell(v, (p.daily_fit_pc&&p.daily_fit_pc[i])||0, i===qti?'today':''); });
+    qh += qcell(p.fit_wtd, p.fit_pc_wtd||0, 'tot', true)+'</tr>';
+  });
+  qh += '</tbody><tfoot>';
+  const qcolT = qdays.map((_,i)=> qp.reduce((a,p)=> a+((p.daily_fit&&p.daily_fit[i])||0), 0));
+  const qcolP = qdays.map((_,i)=> qp.reduce((a,p)=> a+((p.daily_fit_pc&&p.daily_fit_pc[i])||0), 0));
+  const qgT = qp.reduce((a,p)=> a+(p.fit_wtd||0), 0);
+  const qgP = qp.reduce((a,p)=> a+(p.fit_pc_wtd||0), 0);
+  qh += '<tr><td class="sn">Total</td>';
+  qcolT.forEach((v,i)=>{ qh += qcell(v, qcolP[i], i===qti?'today':''); });
+  qh += qcell(qgT, qgP, 'tot', true)+'</tr></tfoot>';
+  document.getElementById('qctbl').innerHTML = qh;
+
+  document.getElementById('paintperiod').textContent = (D.scope==='month'?'this month':'this week');
+  const pt = D.paint||[]; const pdays = D.days.map(d=>d.label); const pti = D.today_index;
+  let ph = '<thead><tr><th class="sn">Plant</th>'+pdays.map((d,i)=>`<th class="${i===pti?'today':''}">${d}</th>`).join('')+'<th>Total</th></tr></thead><tbody>';
+  pt.forEach(p=>{
+    const c = COLORS[p.plant]||'#7e8aa3';
+    ph += `<tr><td class="sn" style="border-left:3px solid ${c}"><span style="color:${c}">${p.name}</span></td>`;
+    (p.daily||[]).forEach((v,i)=>{ ph += qcell(v, (p.daily_pc&&p.daily_pc[i])||0, i===pti?'today':''); });
+    ph += qcell(p.tons_wtd, p.pc_wtd||0, 'tot', true)+'</tr>';
+  });
+  ph += '</tbody>';
+  if(pt.length>1){
+    const ptc=pdays.map((_,i)=>pt.reduce((a,p)=>a+((p.daily&&p.daily[i])||0),0));
+    const ppc=pdays.map((_,i)=>pt.reduce((a,p)=>a+((p.daily_pc&&p.daily_pc[i])||0),0));
+    ph += '<tfoot><tr><td class="sn">Total</td>';
+    ptc.forEach((v,i)=>{ ph += qcell(v, ppc[i], i===pti?'today':''); });
+    ph += qcell(pt.reduce((a,p)=>a+(p.tons_wtd||0),0), pt.reduce((a,p)=>a+(p.pc_wtd||0),0), 'tot', true)+'</tr></tfoot>';
+  }
+  document.getElementById('painttbl').innerHTML = ph;
+
+  document.getElementById('upd').textContent = 'updated '+D.generated_at.split(' ')[1];
+  document.getElementById('foot').textContent = 'Source: PowerFab (fit/cut) + QuickBooks (hours) · data as of '+D.generated_at;
+
+}
+async function load(){
+  try{ const r = await fetch(DATA_FILE+'?_='+Date.now(), {cache:'no-store'}); if(!r.ok) throw 0; return await r.json(); }
+  catch(e){ return FALLBACK; }
+}
+function refresh(){ load().then(render); }
+refresh(); setInterval(refresh, 300000);
+function tick(){ const n=new Date(); document.getElementById('clock').textContent=n.toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'}); }
+tick(); setInterval(tick,30000);
+</script>
+</body>
+</html>

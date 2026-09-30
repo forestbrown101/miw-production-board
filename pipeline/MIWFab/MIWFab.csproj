@@ -1,0 +1,33 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net8.0-windows</TargetFramework>
+    <AssemblyName>MIWFab</AssemblyName>
+    <RootNamespace>MIWFab</RootNamespace>
+    <Nullable>disable</Nullable>
+    <ImplicitUsings>disable</ImplicitUsings>
+    <LangVersion>latest</LangVersion>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <!-- The only dependency. Check NuGet for a build matching the PowerFab version at MIW. -->
+    <PackageReference Include="Tekla.PowerFab.API" Version="1.0.1" />
+  </ItemGroup>
+
+  <!--
+    You also need the two generated schema source files from the Tekla Developer Center:
+      fabsuite-xml-request-v0108.Designer.cs
+      fabsuite-xml-response-v0108.cs
+    Drop them in this folder. Program.cs does not need them, because it works at the XML
+    string level, but they are required the moment you want the typed object model. Tekla
+    says the schema is updated often, so regenerate after any PowerFab upgrade.
+
+    Bitness: this builds AnyCPU, which produces an x64 host on an x64 machine. The Tekla
+    library is managed code talking a socket, so 32 bit is not required. If you ever get a
+    BadImageFormatException at runtime, add <PlatformTarget>x86</PlatformTarget> back to the
+    PropertyGroup above AND install the x86 .NET 8 desktop runtime, because the x64 SDK alone
+    cannot run a 32 bit app.
+  -->
+
+</Project>

@@ -1,0 +1,125 @@
+MIW COMMAND CENTER
+==================
+Last updated 2026-09-03
+(was "MIW Board Launcher" until 2026-09-03)
+
+WHAT IT IS
+  One thing to double-click. It opens a menu of everything worth looking at.
+  Click a board, it opens in its own clean window: no address bar, no tabs.
+  Click Backlog, it finds the newest weekly schedules workbook and opens it
+  in Excel.
+
+THIS IS THE MASTER COPY
+  ...\Merchant Iron Works Team Site - Server\MIW Command Center\
+  Nobody should copy these files anywhere. Put a SHORTCUT on their desktop
+  that points here, so there is one config and one place to fix things.
+  The copies in SCHEDULES\Daily Reports\Schedule Board are forwarder .bat
+  files, kept alive so older shortcuts still work.
+
+GETTING TO IT FAST (two buttons at the bottom)
+
+  Add desktop shortcut
+    Drops a shortcut on that PC's desktop with the MIW icon on it, pointed
+    back at this folder. Works every time.
+
+  Pin to taskbar
+    Creates a Start Menu entry first (so you can also just hit Start and type
+    MIW), then tries to pin it.
+    On Windows 11, and on newer Windows 10 builds, Microsoft blocks a program
+    from pinning itself to the taskbar. Only Explorer is allowed to do it. So
+    if the pin does not go through, the button opens the folder with the
+    shortcut highlighted and tells you to right-click it, Show more options,
+    Pin to taskbar. That is two clicks, and it is the best anyone can do.
+    This is a Windows restriction, not a bug in the Command Center.
+
+  Both shortcuts point at powershell.exe running MIW-CommandCenter.ps1, not at
+  the .bat. Two reasons: Windows refuses to pin a shortcut whose target is a
+  batch file, and this way there is no black console window flash on startup.
+  Do NOT copy the .bat itself to a desktop. It needs the other files beside it.
+
+HOW TO USE IT
+  Double-click "MIW Command Center.bat".
+  Click a tile.
+  Check "TV mode" first if you want it full screen with no window frame.
+  Alt+F4 or F11 to leave a board window.
+
+THE FILES (keep them together)
+  MIW Command Center.bat   what people double-click
+  MIW-CommandCenter.ps1    the menu itself
+  boards.json              every tile
+  MIW.ico                  the icon, for the window and for desktop shortcuts
+  MIW-favicon.png          same logo at 64px, stamped into the board pages so
+                           the board windows carry it too
+
+
+TILES TODAY
+  Backlog             newest MIW WEEK ## SCHEDULES workbook, opens in Excel
+                      (opens normally, editable. Who may actually save is a
+                       SharePoint question, not a launcher question)
+  Production Board    explorer.html, weekly and monthly in one board, API fed
+  Fabrication Board   index_fab.html
+  Saw Board           greyed out, not wired up yet
+  Paint Plan          greyed out, not wired up yet
+  Material Flow       greyed out, not wired up yet
+
+
+HOW THE BACKLOG TILE PICKS A FILE
+  Folder   SCHEDULES\2026  (the root, not the subfolders)
+  Pattern  *WEEK*SCHEDULES*.xlsx
+  Skips    anything with SPENT HOURS or WORK COPY in the name
+           Excel lock files (~$...) and hidden OneDrive copies (.filename)
+  Ranks    highest WEEK number first, then highest REV, then newest saved
+  The tile subtitle shows the exact file it found, so you can see at a glance
+  that it grabbed the right week before you click.
+
+  Nothing to maintain each week. Save the new workbook into SCHEDULES\2026
+  with WEEK ## in the name and the launcher finds it.
+
+
+ADDING A NEW BOARD
+  Open boards.json in Notepad. A board tile is one block:
+
+    { "name": "Saw Board",
+      "subtitle": "Cut tons per saw",
+      "target": "saw_board.html",
+      "color": "#C084FC",
+      "status": "live" }
+
+  target  tried in this order:
+            a web address   "http://192.168.1.50:8080/explorer.html"
+            a full path     "C:\\Users\\...\\saw_board.html"
+            a path under OneDrive, which is what the live tiles use
+            just a file name, searched for under OneDrive
+  status  "live" turns the tile on, "soon" greys it out with NOT WIRED UP YET
+
+ADDING A NEW WORKBOOK TILE
+    { "name": "Backlog",
+      "type": "excel",
+      "folder": "Merchant Iron Works Team Site - SCHEDULES\\2026",
+      "pattern": "*WEEK*SCHEDULES*.xlsx",
+      "exclude": ["SPENT HOURS", "WORK COPY"],
+      "status": "live" }
+
+  Save the file, reopen the launcher. Nothing gets rebuilt.
+
+
+WHY THE BOARDS STAY CURRENT
+  The scheduled task rebuilds the board files every 5 minutes.
+  A board opened from a file cannot pull its JSON, so each board reloads itself
+  every 5 minutes to pick up the newest build. Worst case a board is 5 to 10
+  minutes behind, counting OneDrive sync.
+
+  The Production Board saves your Weekly/Monthly choice, the period you picked
+  and where you had scrolled to into the URL before it reloads, and puts them
+  back afterwards. So the refresh does not move what you are looking at, and
+  you should barely notice it happen.
+
+
+IF SOMETHING WILL NOT OPEN
+  "Could not find the file"     that PC has not finished syncing the folder,
+                                or the target in boards.json is wrong
+  "No workbook matched"         same, for the 2026 folder
+  "No Chromium browser"         that PC has neither Edge nor Chrome. Every
+                                Windows PC has Edge, so this should not happen
+  Backlog opens in the wrong app  Excel was not found in the registry, so the
+                                launcher let Windows pick the app

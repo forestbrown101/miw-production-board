@@ -1,0 +1,21 @@
+# credentials: never commit
+powerfab.ini
+qbt_token.txt
+*.token
+# backups, caches, build output, data
+*.bak*
+__pycache__/
+*.pyc
+bin/
+obj/
+data/
+*.csv
+explorer.html
+index.html
+index_month.html
+index_fab.html
+history_data*.json
+production_data*.json
+backlog_latest.json
+saw_history.json
+service_log.txt

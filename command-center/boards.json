@@ -1,0 +1,55 @@
+{
+  "browser": "auto",
+  "boards": [
+    {
+      "name": "Backlog",
+      "subtitle": "Latest weekly schedules workbook",
+      "type": "excel",
+      "link": "backlog_latest.json",
+      "folder_url": "https://merchantironworks.sharepoint.com/SCHEDULES/Forms/AllItems.aspx?id=%2FSCHEDULES%2F2026",
+      "folder": "..\\..\\2026",
+      "pattern": "*WEEK*SCHEDULES*.xlsx",
+      "exclude": [
+        "SPENT HOURS",
+        "WORK COPY"
+      ],
+      "color": "#FFD166",
+      "status": "live"
+    },
+    {
+      "name": "Production Board",
+      "subtitle": "Weekly and monthly, live off the PowerFab API",
+      "target": "explorer.html",
+      "color": "#5AA9FF",
+      "status": "live"
+    },
+    {
+      "name": "Fabrication Board",
+      "subtitle": "Fit tons, man hours, MH per ton",
+      "target": "index_fab.html",
+      "color": "#F56600",
+      "status": "live"
+    },
+    {
+      "name": "Saw Board",
+      "subtitle": "Cut tons per saw",
+      "target": "",
+      "color": "#C084FC",
+      "status": "soon"
+    },
+    {
+      "name": "Paint Plan",
+      "subtitle": "Paint queue and throughput",
+      "target": "",
+      "color": "#3DDC84",
+      "status": "soon"
+    },
+    {
+      "name": "Material Flow",
+      "subtitle": "Received, cut, fabricated by job",
+      "target": "",
+      "color": "#4ECDC4",
+      "status": "soon"
+    }
+  ]
+}
