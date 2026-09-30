@@ -1,0 +1,323 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<meta http-equiv="refresh" content="300"/>
+<script>
+/* MIW refresh engine. Lives at the TOP of the page so it is armed even if the rest of
+   the file is cut off mid-publish or a later script throws. Four layers:
+   1. main timer at 290 s: fires just BEFORE the <meta refresh> at 300 s so this reload,
+      which saves the week/month picker via window.__miwSnapshot, wins the race;
+   2. <meta refresh> at 300 s: browser-level fallback that needs no JavaScript at all;
+   3. recovery: Edge throttles or freezes timers in a window that is not in front, which
+      is how a board "stops" until someone presses F5. The moment the window becomes
+      visible or focused, if the page is older than the refresh interval, reload at once;
+   4. watchdog: a 60 s check that reloads if the main timer is overdue by a minute. */
+(function(){
+  if (window.__miwRefreshArmed) return; window.__miwRefreshArmed = true;
+  var REFRESH_MS = 290000, LOADED = Date.now();
+  function reload(){ try{ if (window.__miwSnapshot) window.__miwSnapshot(); }catch(e){} location.reload(); }
+  function stale(){ return Date.now() - LOADED >= REFRESH_MS; }
+  setTimeout(reload, REFRESH_MS);
+  setInterval(function(){ if (Date.now() - LOADED >= REFRESH_MS + 60000) reload(); }, 60000);
+  function onVisible(){ if (!document.hidden && stale()) reload(); }
+  document.addEventListener('visibilitychange', onVisible);
+  window.addEventListener('focus', onVisible);
+  window.addEventListener('pageshow', function(ev){ if (ev.persisted) reload(); });
+})();
+</script>
+<title>MIW QC Board</title>
+<link rel="icon" type="image/png" href="data:image/png;base64,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">
+<style>
+  *{margin:0;padding:0;box-sizing:border-box;}
+  html,body{height:100%;width:100%;background:#0b0e14;color:#e9edf5;font-family:'Segoe UI',Arial,sans-serif;overflow:hidden;}
+  .wrap{height:100vh;width:100vw;display:flex;flex-direction:column;padding:2.2vh 2.4vw;}
+  .top{display:flex;align-items:center;justify-content:space-between;border-bottom:2px solid #1d2433;padding-bottom:1.2vh;}
+  .brand{font-size:2.9vh;font-weight:700;letter-spacing:.5px;}
+  .brand span{color:#5aa9ff;}
+  .week{font-size:2.1vh;color:#9aa6bd;}
+  .clock{font-size:2.1vh;color:#9aa6bd;font-variant-numeric:tabular-nums;text-align:right;}
+  .upd{font-size:1.4vh;color:#5d6781;}
+  /* minmax(0,1fr) not 1fr: a plain 1fr track has an AUTO minimum, so a card with one row too
+     many (Paint gained Plant 2 on 2026-09-15) grew the row, the hero grew with it and the
+     plant tiles were pushed below the screen. Rows now hold their share; cards clip instead. */
+  .grid{flex:1;min-height:0;display:grid;grid-template-columns:1.15fr 1fr;grid-template-rows:minmax(0,1fr) minmax(0,1fr);gap:1.4vh 1.6vw;padding-top:1.4vh;}
+  .card{background:#121826;border:1px solid #1d2433;border-radius:14px;padding:1.8vh 1.6vw;display:flex;flex-direction:column;min-height:0;overflow:hidden;}
+  .label{font-size:1.8vh;color:#9aa6bd;text-transform:uppercase;letter-spacing:1px;}
+  .hero{grid-row:1 / span 2;justify-content:space-between;}
+  .bignum{font-size:7.9vh;font-weight:800;line-height:1;color:#fff;}
+  .midnum{font-size:5.5vh;font-weight:800;line-height:1;color:#fff;}
+  .bignum small,.midnum small{font-size:3.0vh;font-weight:600;color:#9aa6bd;}
+  .pacelbl{font-size:1.7vh;color:#9aa6bd;margin-top:.5vh;}
+  .bar{background:#1d2433;border-radius:9px;height:3.4vh;width:100%;overflow:hidden;margin-top:.7vh;}
+  .fill{height:100%;border-radius:9px;display:flex;align-items:center;justify-content:flex-end;padding-right:1.0vw;font-size:2.1vh;font-weight:700;color:#06210f;min-width:3vw;}
+  .proj{font-size:1.7vh;color:#9aa6bd;margin-top:.6vh;}
+  .sub{display:flex;gap:1.0vw;margin-top:1.0vh;}
+  .subcell{flex:1;background:#0e1420;border-radius:10px;padding:.8vh 0;text-align:center;}
+  .subname{font-size:1.5vh;color:#9aa6bd;}
+  .subval{font-size:2.5vh;font-weight:700;color:#cdd6e6;}
+  .plantrow{display:flex;justify-content:space-between;align-items:stretch;gap:1.1vw;margin-top:1.0vh;}
+  .plant{flex:1;text-align:center;background:#0e1420;border:1px solid #1d2433;border-radius:12px;padding:1.1vh .7vw;}
+  .pname{font-size:1.65vh;color:#9aa6bd;margin-bottom:.5vh;}
+  .ptoday{font-size:4.5vh;font-weight:800;line-height:1.02;}
+  .pwtd{font-size:1.45vh;color:#7e8aa3;white-space:nowrap;}
+  .pstats{display:flex;justify-content:center;align-items:baseline;gap:.55vw;}
+  .pconn{font-size:1.6vh;color:#7e8aa3;font-weight:600;}
+  .pmh{font-size:4.0vh;font-weight:800;line-height:1.02;}
+  .mh{display:flex;gap:1.2vw;align-items:stretch;margin-top:auto;}
+  .mhcell{flex:1;text-align:center;background:#0e1420;border-radius:10px;padding:1.4vh 0;}
+  .mhname{font-size:1.7vh;color:#9aa6bd;}
+  .mhval{font-size:5.0vh;font-weight:800;line-height:1;}
+  .good{color:#3ddc84;} .mid{color:#ffc24b;} .bad{color:#ff6b6b;}
+  .chartbox{position:relative;flex:1;width:100%;margin-top:1vh;min-height:0;}
+  .foot{font-size:1.5vh;color:#5d6781;text-align:right;margin-top:.7vh;}
+  .pace{font-size:1.6vh;font-weight:700;padding:.3vh 1vw;border-radius:7px;}
+  .ttrow{display:flex;gap:3vw;align-items:flex-end;margin-top:.5vh;}
+  .bignum2{font-size:5.4vh;font-weight:800;line-height:1;color:#fff;}
+  .ttunit{font-size:1.9vh;color:#9aa6bd;font-weight:600;}
+  .pdiv{height:1px;background:#1d2433;margin:1.3vh 0;}
+  .psplit{display:grid;grid-template-columns:1fr 1fr;gap:1.6vw;}
+  .pcolr{border-left:1px solid #1d2433;padding-left:1.4vw;}
+  .phead{font-size:2.2vh;font-weight:800;letter-spacing:.5px;margin-bottom:.8vh;}
+  .plabel{font-size:1.4vh;color:#9aa6bd;text-transform:uppercase;letter-spacing:1px;}
+  .pval{font-size:3.4vh;font-weight:800;color:#fff;line-height:1.1;margin:.1vh 0 .4vh;}
+  .pval small{font-size:1.6vh;color:#9aa6bd;font-weight:600;}
+  .pval .pace{font-size:1.25vh;padding:.2vh .7vw;border-radius:6px;vertical-align:middle;margin-left:.3vw;}
+  .pbar{background:#1d2433;border-radius:7px;height:2.2vh;overflow:hidden;}
+  .pfill{height:100%;border-radius:7px;display:flex;align-items:center;justify-content:flex-end;padding-right:.6vw;font-size:1.3vh;font-weight:700;color:#06210f;min-width:2.4vw;}
+  .pproj{font-size:1.35vh;color:#9aa6bd;margin-top:.35vh;}
+  .cover{display:flex;align-items:center;gap:.6vw;font-size:1.6vh;color:#9aa6bd;flex-wrap:wrap;}
+  .coverchip{font-size:2.0vh;font-weight:800;color:#cdd6e6;background:#0e1420;padding:.2vh 1vw;border-radius:8px;}
+  .sawtbl{width:100%;border-collapse:collapse;font-variant-numeric:tabular-nums;}
+  .sawtbl th{font-size:1.5vh;color:#7e8aa3;font-weight:600;text-transform:uppercase;letter-spacing:.6px;text-align:right;padding:.8vh .7vw;border-bottom:1px solid #1d2433;}
+  .sawtbl th.sn{text-align:left;}
+  .sawtbl td{font-size:2.15vh;text-align:right;padding:.95vh .7vw;color:#e9edf5;line-height:1.08;}
+  .sawtbl td .pc{font-size:1.3vh;color:#7e8aa3;font-weight:600;}
+  .sawtbl td .tu{font-size:1.2vh;color:#7e8aa3;font-weight:600;margin-left:1px;}
+  .sawtbl tbody tr:nth-child(odd){background:rgba(255,255,255,.022);}
+  .sawtbl td.sn{text-align:left;font-weight:700;white-space:nowrap;padding-left:.8vw;}
+  .sawtbl td.z{color:#3d4560;}
+  .sawtbl .today{background:#132741;}
+  .sawtbl td.tot{font-weight:800;color:#fff;}
+  .sawtbl tfoot td{border-top:2px solid #26314a;color:#9aa6bd;font-weight:700;}
+  .sawtbl tfoot td.tot{color:#fff;}
+  /* 2026-09-29: Sun column + Unassigned row. The saw table now carries up to 8 day/total
+     columns and 6 saw rows plus the footer, so it is tightened to stay inside its card on 1080p. */
+  #sawtbl th{padding:.55vh .45vw;}
+  #sawtbl td{padding:.5vh .45vw;font-size:2.0vh;line-height:1.02;}
+  #sawtbl td.sn{padding-left:.6vw;}
+  #sawtbl td .pc{font-size:1.15vh;}
+  #qctbl th,#qctbl td,#painttbl th,#painttbl td{padding-left:.45vw;padding-right:.45vw;}
+  /* 2026-09-29: hover tooltip on the saw table, job number and tons behind each number. */
+  #sawtbl td[data-d]{cursor:default;}
+  #sawtbl td[data-d]:hover{box-shadow:inset 0 0 0 1px #3a4a6b;border-radius:4px;}
+  #cutTip{position:fixed;left:0;top:0;z-index:50;pointer-events:none;display:none;
+    --acc:#5aa9ff;min-width:15vw;max-width:24vw;padding:1.05vh 1.05vw .95vh;
+    background:linear-gradient(180deg,#1d2639 0%,#161d2c 100%);
+    border:1px solid #2c3852;border-top:3px solid var(--acc);border-radius:10px;
+    box-shadow:0 12px 30px rgba(0,0,0,.62),inset 0 1px 0 rgba(255,255,255,.04);
+    font-variant-numeric:tabular-nums;opacity:0;transform:translateY(5px);
+    transition:opacity 110ms ease-out,transform 110ms ease-out;}
+  #cutTip.show{display:block;}
+  #cutTip.in{opacity:1;transform:none;}
+  #cutTip.down{transform:translateY(-5px);}
+  #cutTip.down.in{transform:none;}
+  #cutTip .hd{display:flex;align-items:baseline;justify-content:space-between;gap:1.2vw;
+    padding-bottom:.65vh;margin-bottom:.75vh;border-bottom:1px solid #26314a;}
+  #cutTip .hl{font-size:1.3vh;font-weight:700;letter-spacing:.09em;text-transform:uppercase;color:#8d99b3;white-space:nowrap;}
+  #cutTip .hl b{color:var(--acc);font-weight:800;}
+  #cutTip .ht{font-size:2.1vh;font-weight:800;color:#fff;white-space:nowrap;}
+  #cutTip .ht small,#cutTip .v small{font-size:1.15vh;color:#7e8aa3;font-weight:700;margin-left:2px;}
+  #cutTip .row{margin-bottom:.65vh;}
+  #cutTip .row:last-of-type{margin-bottom:.1vh;}
+  #cutTip .ln{display:flex;align-items:baseline;gap:.6vw;white-space:nowrap;}
+  #cutTip .j{font-size:1.8vh;font-weight:800;color:#fff;}
+  #cutTip .n{font-size:1.4vh;color:#9aa6bd;font-weight:600;overflow:hidden;text-overflow:ellipsis;flex:1;min-width:0;}
+  #cutTip .v{font-size:1.8vh;font-weight:800;color:#fff;margin-left:auto;}
+  #cutTip .bar{display:flex;align-items:center;gap:.5vw;margin-top:.35vh;}
+  #cutTip .trk{flex:1;height:4px;border-radius:2px;background:#0e1420;overflow:hidden;}
+  #cutTip .fil{height:100%;border-radius:2px;background:var(--acc);}
+  #cutTip .pct{font-size:1.15vh;font-weight:700;color:#7e8aa3;min-width:2.6vw;text-align:right;}
+  #cutTip .more{font-size:1.3vh;color:#7e8aa3;font-weight:600;margin-top:.5vh;}
+  #cutTip .ar{position:absolute;width:10px;height:10px;transform:rotate(45deg);}
+  #cutTip.up .ar{bottom:-6px;background:#161d2c;border-right:1px solid #2c3852;border-bottom:1px solid #2c3852;}
+  #cutTip.down .ar{top:-7px;background:var(--acc);}
+  /* QC + Paint share one card: 4 + 3 body rows. Tighter than the saw table so all fit. */
+  #qctbl th,#painttbl th{padding:.5vh .7vw;}
+  #qctbl td,#painttbl td{padding:.4vh .7vw;font-size:1.95vh;line-height:1;}
+  #qctbl td .pc,#painttbl td .pc{font-size:1.15vh;line-height:1;margin-top:.15vh;}
+  .picker{display:flex;align-items:center;gap:.7vw;justify-content:center;}
+  .ptab{background:#121826;border:1px solid #1d2433;color:#9aa6bd;font-size:1.9vh;font-weight:700;padding:.5vh 1.3vw;border-radius:9px;cursor:pointer;font-family:inherit;}
+  .ptab.on{background:#12243a;color:#5aa9ff;border-color:#2a4a6b;}
+  #perSel{background:#121826;border:1px solid #1d2433;color:#e9edf5;font-size:1.9vh;font-weight:700;padding:.5vh 1vw;border-radius:9px;font-family:inherit;min-width:15vw;}
+  /* ---- QC board additions (2026-09-29). Everything above this line is the Production Board's CSS, unchanged. ---- */
+  a.ptab{text-decoration:none;display:inline-flex;align-items:center;}
+  .ptab.back{color:#cdd6e6;margin-right:.6vw;}
+  .ptab.back:hover{background:#12243a;color:#5aa9ff;border-color:#2a4a6b;}
+  .asplit{display:grid;grid-template-columns:1fr 1fr 1fr;gap:1.2vw;}
+  .asplit .pcol + .pcol{border-left:1px solid #1d2433;padding-left:1.2vw;}
+  .asub{font-size:1.45vh;color:#9aa6bd;margin-top:.45vh;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+  .asub b{color:#cdd6e6;font-weight:700;}
+  .sawtbl tr.totline td{border-top:2px solid #26314a;color:#9aa6bd;font-weight:700;background:transparent;}
+  .sawtbl tr.totline td.tot{color:#fff;}
+  .sawtbl tbody tr.totline{background:transparent;}
+  .sawtbl tr.totline td.z{color:#3d4560;}
+  .sawtbl tr.totline td.today{background:#132741;}
+  #progtbl td{font-size:1.9vh;padding:.55vh .6vw;}
+  #progtbl th{padding:.5vh .6vw;}
+  .ptrk{height:1.5vh;background:#0e1420;border-radius:6px;overflow:hidden;min-width:9vw;}
+  .pfl{height:100%;border-radius:6px;}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="top">
+    <div class="brand">MERCHANT IRON WORKS <span id="scopetag">· QC</span></div>
+    <div class="picker"><a id="backBtn" class="ptab back" href="explorer.html">&larr; Production Board</a><button id="tabWeek" class="ptab on">Weekly</button><button id="tabMonth" class="ptab">Monthly</button><select id="perSel"></select></div>
+    <div><div class="clock" id="clock">--:--</div><div class="upd" id="upd"></div></div>
+  </div>
+  <div class="grid">
+    <div class="card hero">
+      <div>
+        <div class="label">QC Final · <span id="per">week</span> <span id="todaytag" style="color:#5aa9ff"></span></div>
+        <div class="ttrow">
+          <div><span class="bignum2" id="toptons">—</span><span class="ttunit"> Tons fit</span></div>
+          <div><span class="bignum2" id="toppc" style="color:#cdd6e6">—</span><span class="ttunit"> Pieces</span></div>
+          <div><span class="bignum2" id="topp1" style="color:#5aa9ff">—</span><span class="ttunit"> Plant 1</span></div>
+        </div>
+        <div class="pdiv"></div>
+        <div class="asplit" id="areas"></div>
+
+        <div class="label" style="margin-top:1.6vh">Jobs · QC tons by area · <span id="jobsperiod"></span></div>
+        <div id="jobs" style="margin:.4vh 0 .2vh;"></div>
+      </div>
+      <div class="plantrow" id="plantrow"></div>
+    </div>
+    <div class="card">
+      <div class="label">QC · Tons &amp; pieces by area · <span id="dayperiod">this week</span></div>
+      <table class="sawtbl" id="daytbl" style="margin-top:.6vh;"></table>
+    </div>
+    <div class="card">
+      <div class="label">Job progress · QC tons to date vs released</div>
+      <table class="sawtbl" id="progtbl" style="margin-top:.5vh;"></table>
+    </div>
+  </div>
+  <div class="foot" id="foot"></div>
+</div>
+
+<script>
+const HIST = __QC_JSON__;
+const AC = {EB:'#500000', WB:'#9B7FD4', P4:'#F56600'};   // East Bay = Texas A&M maroon, West Bay = lavender (Plant 1 blue stays for Plant 1)
+// A&M maroon is too dark to read as text on the board's navy, so East Bay text is white on a maroon chip,
+// the way A&M prints it. Every other area keeps plain colored text.
+function nm(k, text, pad){ return k==='EB'
+  ? `<span style="background:#500000;color:#fff;padding:${pad||'.05vh .45vw'};border-radius:6px;box-shadow:0 0 0 1px #7a1f1f">${text}</span>`
+  : `<span style="color:${AC[k]}">${text}</span>`; }
+function fillStyle(k){ return 'background:'+AC[k]+(k==='EB'?';box-shadow:inset 0 0 0 1px #8a2a2a':''); }
+const ORDER = ['EB','WB','P4'];
+function num(v,d=1){ return v==null?'—':Number(v).toLocaleString(undefined,{minimumFractionDigits:d,maximumFractionDigits:d}); }
+function tn(v){ return (v>0?num(v)+'<span class="tu">t</span>':'—'); }
+
+function render(D){
+  document.getElementById('scopetag').textContent = '· QC · '+(D.scope==='month'?'MONTHLY':'WEEKLY');
+  document.getElementById('per').textContent = D.period_label;
+  document.getElementById('todaytag').textContent = '· as of '+D.today_label;
+  document.getElementById('toptons').textContent = num(D.total);
+  document.getElementById('toppc').textContent = D.pieces.toLocaleString();
+  document.getElementById('topp1').textContent = num(D.p1);
+
+  // Three areas side by side: tons, pieces, share of the total, busiest job
+  document.getElementById('areas').innerHTML = ORDER.map(k=>{
+    const a = D.area[k], share = D.total>0 ? Math.round(a.tons/D.total*100) : 0;
+    return `<div class="pcol">
+      <div class="phead">${nm(k,a.name.toUpperCase())}${a.plant==='P1'?' <span style="font-size:1.3vh;color:#7e8aa3;font-weight:600">P1</span>':''}</div>
+      <div class="pval">${num(a.tons)}<small> t · ${a.pieces.toLocaleString()} pc</small></div>
+      <div class="pbar"><div class="pfill" style="width:${Math.max(share,0)}%;${fillStyle(k)};${k==='EB'?'color:#fff;':''}${share<12?'color:transparent;':''}">${share}%</div></div>
+      <div class="asub">${a.top_job?'Most: <b>'+a.top_job+'</b> · '+num(a.top_tons)+' t':'No QC this '+D.scope}</div>
+      <div class="asub">${a.jobs} job${a.jobs===1?'':'s'} through QC</div>
+    </div>`; }).join('');
+
+  // Jobs: one bar per job, split by area
+  document.getElementById('jobsperiod').textContent = D.scope==='month'?'this month':'this week';
+  const jmax = Math.max(1, ...D.jobs.map(j=>j.tons));
+  document.getElementById('jobs').innerHTML = D.jobs.map(j=>{
+    const tag = ORDER.filter(k=>j[k]>0).map(k=>nm(k,k,'0 .3vw')).join('<span style="color:#5d6781"> · </span>');
+    const fills = ORDER.filter(k=>j[k]>0).map(k=>`<div style="width:${(j[k]/j.tons*100).toFixed(1)}%;${fillStyle(k)};"></div>`).join('');
+    return `<div style="display:flex;align-items:center;gap:.8vw;padding:.45vh 0;">
+      <div style="font-size:2.2vh;font-weight:700;width:5vw;font-variant-numeric:tabular-nums;">${j.job}</div>
+      <div style="font-size:1.5vh;font-weight:700;width:6.2vw;white-space:nowrap;">${tag}</div>
+      <div style="flex:0 0 12vw;min-width:0;font-size:1.8vh;color:#cdd6e6;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${j.name}</div>
+      <div style="flex:1;height:1.7vh;background:#0e1420;border-radius:6px;overflow:hidden;">
+        <div style="height:100%;width:${(j.tons/jmax*100).toFixed(0)}%;display:flex;border-radius:6px;overflow:hidden;">${fills}</div>
+      </div>
+      <div style="font-size:2.2vh;font-weight:800;white-space:nowrap;margin-left:.8vw;font-variant-numeric:tabular-nums;">${num(j.tons)}<span style="font-size:1.3vh;color:#9aa6bd;"> t</span></div>
+    </div>`; }).join('') || '<div class="pproj">No QC tons this period.</div>';
+
+  // Bottom tiles: the three areas today (or the last day of a closed period)
+  // live period: today; closed period: the last day anything passed QC
+  let ti = D.today_index;
+  if (ti < 0){ ti = 0; D.days.forEach((_,i)=>{ if (ORDER.some(k=>D.area[k].daily[i]>0)) ti = i; }); }
+  const dl = D.days[ti] ? (D.days[ti].label+' '+D.days[ti].date).trim() : '';
+  document.getElementById('plantrow').innerHTML = ORDER.map(k=>{
+    const a = D.area[k];
+    return `<div class="plant" style="border-top:4px solid ${AC[k]};"><div class="pname">${a.name} · ${D.scope==='month'?dl:(D.today_index>=0?'today':dl)}</div>
+      <div class="pstats"><div><div class="ptoday" style="color:${k==='EB'?'#fff':AC[k]}">${num(a.daily[ti])}</div><div class="pwtd">tons · ${a.daily_pc[ti]} pc</div></div></div></div>`; }).join('');
+
+  // Daily table by area, with a Plant 1 subtotal
+  document.getElementById('dayperiod').textContent = D.scope==='month'?'this month':'this week';
+  const days = D.days.map(d=>d.label), T = D.today_index;
+  const cell=(t,pc,cls)=> (t>0||pc>0) ? `<td class="${cls||''}"><div>${num(t)}</div><div class="pc">${pc} pc</div></td>` : `<td class="z ${cls||''}">—</td>`;
+  const tcell=(t,pc)=> (t>0||pc>0) ? `<td class="tot"><div>${num(t)}<span class="tu">t</span></div><div class="pc">${pc} pc</div></td>` : `<td class="z tot">—</td>`;
+  const row=(name,c,dly,dpc,t,pc,cls)=> `<tr class="${cls||''}"><td class="sn"${c?` style="border-left:${c===AC.EB?5:3}px solid ${c}"`:''}>${c?(c===AC.EB?nm('EB',name,'.1vh .5vw'):`<span style="color:${c}">${name}</span>`):name}</td>`
+      + dly.map((v,i)=>cell(v,dpc[i],i===T?'today':'')).join('') + tcell(t,pc)+'</tr>';
+  const sum=(ks,f)=> days.map((_,i)=> ks.reduce((a,k)=>a+D.area[k][f][i],0));
+  let h = '<thead><tr><th class="sn">Area</th>'+days.map((d,i)=>`<th class="${i===T?'today':''}">${d}</th>`).join('')+'<th>Total</th></tr></thead><tbody>';
+  h += row('East Bay',AC.EB,D.area.EB.daily,D.area.EB.daily_pc,D.area.EB.tons,D.area.EB.pieces);
+  h += row('West Bay',AC.WB,D.area.WB.daily,D.area.WB.daily_pc,D.area.WB.tons,D.area.WB.pieces);
+  h += row('Plant 1 total',null,sum(['EB','WB'],'daily'),sum(['EB','WB'],'daily_pc'),D.p1,D.area.EB.pieces+D.area.WB.pieces,'totline');
+  h += row('Plant 4',AC.P4,D.area.P4.daily,D.area.P4.daily_pc,D.area.P4.tons,D.area.P4.pieces);
+  h += row('Total',null,sum(ORDER,'daily'),sum(ORDER,'daily_pc'),D.total,D.pieces,'totline');
+  h += '</tbody>';
+  document.getElementById('daytbl').innerHTML = h;
+
+  // Job progress: QC tons to date against released (PowerFab BOM) tons
+  let p = '<thead><tr><th class="sn">Job</th><th style="text-align:left">QC to date / released</th><th>Left</th></tr></thead><tbody>';
+  D.jobs.forEach(j=>{
+    const pc = j.pct==null?0:j.pct, col = pc>=90?'#3ddc84':'#5aa9ff';
+    p += `<tr><td class="sn">${j.job} <span style="font-size:1.35vh;color:#7e8aa3;font-weight:600">${j.name}</span></td>
+      <td style="text-align:left"><div style="display:flex;align-items:center;gap:.6vw"><div class="ptrk" style="flex:1"><div class="pfl" style="width:${pc}%;background:${col}"></div></div>
+        <span style="white-space:nowrap">${num(j.fabbed,0)}<span class="pc"> / ${j.released?num(j.released,0):'—'} t</span></span>
+        <span class="pc" style="width:3vw;text-align:right">${j.pct==null?'':j.pct+'%'}</span></div></td>
+      <td class="tot">${j.left==null?'—':num(j.left,0)+'<span class="tu">t</span>'}</td></tr>`; });
+  document.getElementById('progtbl').innerHTML = p + '</tbody>';
+
+  document.getElementById('upd').textContent = 'updated '+D.generated_at.split(' ')[1];
+  document.getElementById('foot').textContent = 'Source: PowerFab QC Final (VT - Final Visual Weld Inspection, passed) · released tons from the PowerFab BOM · data as of '+D.generated_at;
+}
+
+let mode='week';
+function periods(){ return mode==='week'?HIST.weeks:HIST.months; }
+function curKey(){ return mode==='week'?HIST.current_week:HIST.current_month; }
+function fillPicker(k){ const sel=document.getElementById('perSel');
+  sel.innerHTML=periods().slice().reverse().map(p=>`<option value="${p.key}">${p.label}${p.key===curKey()?' (current)':''}</option>`).join(''); sel.value=k||curKey(); }
+function showSel(){ const k=document.getElementById('perSel').value; const p=periods().find(x=>x.key===k); if(p) render(p.data); }
+function setMode(m){ mode=m; document.getElementById('tabWeek').classList.toggle('on',m==='week'); document.getElementById('tabMonth').classList.toggle('on',m==='month'); fillPicker(curKey()); showSel(); }
+document.getElementById('tabWeek').onclick=()=>setMode('week');
+document.getElementById('tabMonth').onclick=()=>setMode('month');
+document.getElementById('perSel').onchange=showSel;
+function tick(){ const n=new Date(); document.getElementById('clock').textContent=n.toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'}); }
+tick(); setInterval(tick,30000);
+setMode('week');
+// Same hash as the Production Board (v=week|month & p=period key) so the back button lands on the same view.
+(function(){
+  function state(){ const sel=document.getElementById('perSel'); return 'v='+(document.getElementById('tabMonth').classList.contains('on')?'month':'week')+'&p='+encodeURIComponent(sel?sel.value:''); }
+  const q={}; location.hash.replace(/^#/,'').split('&').forEach(kv=>{ const i=kv.indexOf('='); if(i>0) q[kv.slice(0,i)]=decodeURIComponent(kv.slice(i+1)); });
+  if (q.v==='month'||q.v==='week') setMode(q.v);
+  const sel=document.getElementById('perSel'); if (q.p) for (let i=0;i<sel.options.length;i++) if (sel.options[i].value===q.p){ sel.selectedIndex=i; showSel(); break; }
+  document.getElementById('backBtn').addEventListener('click', e=>{ e.currentTarget.href='explorer.html#'+state(); });
+  window.__miwSnapshot = function(){ try{ location.hash = state(); }catch(e){} };
+})();
+</script>
+</body>
+</html>
